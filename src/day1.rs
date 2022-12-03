@@ -28,7 +28,7 @@ Parse input into calorie count totals. For example:
 Panics on missing file or bad input.
 */
 fn parse_input(day: &str) -> Vec<i32> {
-    common::read_lines(common::get_path(day))
+    common::get_input_lines(day)
         .unwrap()
         .fold((vec![], 0), |(mut acc, total), line| {
             if let Ok(count) = line.unwrap().parse::<i32>() {
