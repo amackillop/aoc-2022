@@ -20,9 +20,8 @@ pub fn day3() -> AocResult<()> {
 // u8 reps are 97 and 65
 fn part1() -> AocResult<u16> {
     let total = parse_input1()?
-        .iter()
         .map(|(first, second)| {
-            if let Some(item) = find_item(first, second) {
+            if let Some(item) = find_item(&first, &second) {
                 to_priority(&item)
             } else {
                 0
@@ -32,17 +31,16 @@ fn part1() -> AocResult<u16> {
     Ok(total)
 }
 
-fn parse_input1() -> AocResult<Vec<(HashSet<u8>, HashSet<u8>)>> {
-    common::get_input_lines("day3")?
-        .flat_map(|res| {
-            res.map(|line| {
-                let half = line.len() / 2;
-                let first = line.bytes().take(half).collect();
-                let second = line.bytes().skip(half).collect();
-                Ok((first, second))
-            })
+fn parse_input1() -> AocResult<impl Iterator<Item = (HashSet<u8>, HashSet<u8>)>> {
+    let iter = common::get_input_lines("day3")?.flat_map(|res| {
+        res.map(|line| {
+            let half = line.len() / 2;
+            let first = line.bytes().take(half).collect();
+            let second = line.bytes().skip(half).collect();
+            (first, second)
         })
-        .collect()
+    });
+    Ok(iter)
 }
 fn find_item(first: &HashSet<u8>, second: &HashSet<u8>) -> Option<u8> {
     // Should only be one item
@@ -62,16 +60,12 @@ fn to_priority(byte: &u8) -> u16 {
 // Chunk the sets in groups of three and take the intersection to find the badge
 // Then calculate and sum the priorities
 fn part2() -> AocResult<u16> {
-    let total = parse_input2()?[..]
+    let total = parse_input2()?.collect::<Vec<HashSet<u8>>>()[..]
         .chunks(3)
         .map(|sets| {
             // This should always match given correct input
-            if let [first, second, third] = sets {
-                if let Some(badge) = find_badge(first, second, third) {
-                    to_priority(&badge)
-                } else {
-                    0
-                }
+            if let Some(badge) = find_badge(sets) {
+                to_priority(&badge)
             } else {
                 0
             }
@@ -80,18 +74,41 @@ fn part2() -> AocResult<u16> {
     Ok(total)
 }
 
-fn parse_input2() -> AocResult<Vec<HashSet<u8>>> {
-    common::get_input_lines("day3")?
-        .flat_map(|res| res.map(|line| Ok(line.bytes().collect())))
-        .collect()
+// Same as other one except uses iterator directly. Unfortunately there seems to
+// be no direct method for chunking an iterator
+fn part2_v2() -> AocResult<u16> {
+    let (total, _) = parse_input2()?.fold((0, vec![]), |(total, mut chunk), set| {
+        chunk.push(set);
+        if chunk.len() == 3 {
+            if let Some(badge) = find_badge(&chunk) {
+                println!("{}", total + to_priority(&badge));
+                (total + to_priority(&badge), vec![])
+            } else {
+                (total, vec![])
+            }
+        } else {
+            (total, chunk)
+        }
+    });
+    Ok(total)
 }
 
-fn find_badge(first: &HashSet<u8>, second: &HashSet<u8>, third: &HashSet<u8>) -> Option<u8> {
-    let first_intersection: HashSet<u8> = first.intersection(&second).cloned().collect();
-    first_intersection
-        .intersection(&third)
-        .next()
-        .map(|item| *item)
+fn parse_input2() -> AocResult<impl Iterator<Item = HashSet<u8>>> {
+    let iter =
+        common::get_input_lines("day3")?.flat_map(|res| res.map(|line| line.bytes().collect()));
+    Ok(iter)
+}
+
+fn find_badge(sets: &[HashSet<u8>]) -> Option<u8> {
+    if let [first, second, third] = &sets[..] {
+        let first_intersection: HashSet<u8> = first.intersection(second).cloned().collect();
+        first_intersection
+            .intersection(third)
+            .next()
+            .map(|item| *item)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -110,6 +127,15 @@ mod tests {
     #[test]
     fn test_part_2_gives_correct_answer() {
         if let Ok(answer) = part2() {
+            assert_eq!(answer, 2708)
+        } else {
+            panic!("Bad input.")
+        }
+    }
+
+    #[test]
+    fn test_part_2_v2_gives_correct_answer() {
+        if let Ok(answer) = part2_v2() {
             assert_eq!(answer, 2708)
         } else {
             panic!("Bad input.")
