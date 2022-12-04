@@ -4,6 +4,8 @@ use std::{
     io::{self, BufRead}, error::Error,
 };
 
+pub type AocResult<T> = Result<T, Box<dyn Error>>;
+
 #[derive(Debug)]
 pub struct ParseError(String);
 
@@ -22,8 +24,8 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {}
 
 // Returns an Iterator to the Reader of the lines of the file.
-pub fn get_input_lines(day: &str) -> io::Result<io::Lines<io::BufReader<File>>>{
+pub fn get_input_lines(day: &str) -> AocResult<impl Iterator<Item = String>> {
     let file = File::open(format!("./input/{day}.txt"))?;
-    Ok(io::BufReader::new(file).lines())
+    Ok(io::BufReader::new(file).lines().map(|l| l.unwrap()))
 }
 

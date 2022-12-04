@@ -1,23 +1,21 @@
-use std::error::Error;
-
-use crate::common::{self, ParseError};
-
-type AocResult<T> = Result<T, Box<dyn Error>>;
+use crate::common::{self, AocResult, ParseError};
 
 pub fn day2() -> AocResult<()> {
     println!("~~~~~~~~~~~~~ Day 2 ~~~~~~~~~~~~~");
-    println!("Part 1: {}", total_score(&parse_input(first_parser)?));
-    println!("Part 2: {}", total_score(&parse_input(second_parser)?));
+    let lines = common::get_input_lines("day2")?;
+    println!("Part 1: {}", total_score(&parse_lines(lines, first_parser)?));
+    let lines = common::get_input_lines("day2")?;
+    println!("Part 2: {}", total_score(&parse_lines(lines, second_parser)?));
     Ok(())
 }
 
 // Parse input into a vector of rounds based on interpretation.
-fn parse_input<F>(line_parser: F) -> AocResult<Vec<Round>>
+fn parse_lines<F>(lines: impl Iterator<Item = String>, parser: F) -> AocResult<Vec<Round>>
 where
     F: Fn(&str) -> AocResult<Round>,
 {
-    common::get_input_lines("day2")?
-        .flat_map(|res| res.map(|line| line_parser(&line)))
+    lines
+        .map(|line| parser(&line))
         .collect()
 }
 
@@ -135,20 +133,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_1_gives_correct_answer() {
-        if let Ok(rounds) = &parse_input(first_parser) {
-            assert!(total_score(rounds) == 14264);
-        } else {
-            panic!("Bad input.")
-        }
+    fn test_part_1_gives_correct_answer() -> AocResult<()>  {
+        let lines = common::get_input_lines("day2")?;
+        let rounds = parse_lines(lines, first_parser)?;
+        assert_eq!(total_score(&rounds), 14264);
+        Ok(())
     }
 
     #[test]
-    fn test_part_2_gives_correct_answer() {
-        if let Ok(rounds) = &parse_input(second_parser) {
-            assert!(total_score(rounds) == 12382);
-        } else {
-            panic!("Bad input.")
-        }
+    fn test_part_2_gives_correct_answer() -> AocResult<()>  {
+        let lines = common::get_input_lines("day2")?;
+        let rounds = parse_lines(lines, second_parser)?;
+        assert_eq!(total_score(&rounds), 12382);
+        Ok(())
     }
 }

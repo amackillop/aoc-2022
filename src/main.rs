@@ -9,7 +9,7 @@ use crate::day3::day3;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    day1();
-    day2();
+    day1()?;
+    day2()?;
     day3()
 }
