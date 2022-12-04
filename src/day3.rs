@@ -11,9 +11,9 @@ pub fn day3() -> AocResult<()> {
     Ok(())
 }
 
-// Input: GwrhJPDJCZFRcwfZWV represents two sacks
+// Input: GwrhJPDJCZFRcwfZWV represents two compartments
 // Length is even number
-// First half represents first sack, second half represents second
+// First half represents first compartment, second half represents second
 // Create two sets and take the intersection to find the item in each
 // Then calculate and sum the priorities
 // a -> 1 A -> 27
@@ -36,16 +36,16 @@ fn parse_input1() -> AocResult<Vec<(HashSet<u8>, HashSet<u8>)>> {
     common::get_input_lines("day3")?
         .flat_map(|res| {
             res.map(|line| {
-                let length = line.len();
-                let first = line[0..length / 2].bytes().collect();
-                let second = line[length / 2..].bytes().collect();
+                let half = line.len() / 2;
+                let first = line.bytes().take(half).collect();
+                let second = line.bytes().skip(half).collect();
                 Ok((first, second))
             })
         })
         .collect()
 }
-// Should only be one item
 fn find_item(first: &HashSet<u8>, second: &HashSet<u8>) -> Option<u8> {
+    // Should only be one item
     first.intersection(second).next().map(|item| *item)
 }
 
@@ -57,13 +57,10 @@ fn to_priority(byte: &u8) -> u16 {
     }
 }
 
-// Input: GwrhJPDJCZFRcwfZWV represents two sacks
-// Length is even number
-// First half represents first sack, second half represents second
-// Create two sets and take the intersection to find the item in each
+// Input: GwrhJPDJCZFRcwfZWV represents a sack
+// Create a set out of each sack
+// Chunk the sets in groups of three and take the intersection to find the badge
 // Then calculate and sum the priorities
-// a -> 1 A -> 27
-// u8 reps are 97 and 65
 fn part2() -> AocResult<u16> {
     let total = parse_input2()?[..]
         .chunks(3)
