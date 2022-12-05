@@ -1,6 +1,6 @@
-use crate::common::{self, AocResult};
+use crate::common::{self, Result};
 
-pub fn day4() -> AocResult<()> {
+pub fn day4() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 4 ~~~~~~~~~~~~~");
     let lines = common::get_input_lines("day4")?;
     println!("Part 1: {}", part1(lines));
@@ -78,14 +78,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_1_gives_correct_answer() -> AocResult<()> {
+    fn test_part_1_gives_correct_answer() -> Result<()> {
         let lines = common::get_input_lines("day4")?;
         assert_eq!(part1(lines), 651);
         Ok(())
     }
 
     #[test]
-    fn test_part_2_gives_correct_answer() -> AocResult<()> {
+    fn test_part_2_gives_correct_answer() -> Result<()> {
         let lines = common::get_input_lines("day4")?;
         assert_eq!(part2(lines), 956);
         Ok(())

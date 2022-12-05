@@ -1,17 +1,17 @@
-use crate::common::{get_input_lines, AocResult};
+use crate::common::{get_input_lines, Result};
 
-pub fn day1() -> AocResult<()> {
+pub fn day1() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 1 ~~~~~~~~~~~~~");
     let input = get_input_lines("day1")?;
     let calorie_counts = parse_input(input);
-    println!("Part 1: {:?}", part1(&calorie_counts)?);
-    println!("Part 2: {:?}", part2(calorie_counts));
+    println!("Part 1: {}", part1(&calorie_counts).ok_or("Empty list.")?);
+    println!("Part 2: {}", part2(calorie_counts));
     Ok(())
 }
 
 // Find the maximum calorie count
-fn part1(calorie_counts: &Vec<u32>) -> Result<&u32, &str> {
-    calorie_counts.iter().max().ok_or("Empty calorie_counts.")
+fn part1(calorie_counts: &Vec<u32>) -> Option<&u32> {
+    calorie_counts.iter().max()
 }
 
 // Find the sum of the top 3 calorie counts
@@ -43,18 +43,18 @@ fn parse_input(input: impl Iterator<Item = String>) -> Vec<u32> {
 mod tests {
     use super::*;
 
-    fn calorie_counts() -> AocResult<Vec<u32>> {
+    fn calorie_counts() -> Result<Vec<u32>> {
         Ok(parse_input(get_input_lines("day1")?))
     }
 
     #[test]
-    fn test_part_1_gives_correct_answer() -> AocResult<()> {
-        assert_eq!(part1(&calorie_counts()?)?, &69836);
+    fn test_part_1_gives_correct_answer() -> Result<()> {
+        assert_eq!(part1(&calorie_counts()?).ok_or("Empty list.")?, &69836);
         Ok(())
     }
 
     #[test]
-    fn test_part_2_gives_correct_answer() -> AocResult<()> {
+    fn test_part_2_gives_correct_answer() -> Result<()> {
         assert_eq!(part2(calorie_counts()?), 207968);
         Ok(())
     }

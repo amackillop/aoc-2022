@@ -1,27 +1,17 @@
-use crate::common::{self, AocResult, ParseError};
+use crate::common::{self, Result};
 
-pub fn day2() -> AocResult<()> {
+pub fn day2() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 2 ~~~~~~~~~~~~~");
     let lines = common::get_input_lines("day2")?;
-    println!("Part 1: {}", total_score(&parse_lines(lines, first_parser)?));
+    println!("Part 1: {}", total_score(lines.map(first_parser)));
     let lines = common::get_input_lines("day2")?;
-    println!("Part 2: {}", total_score(&parse_lines(lines, second_parser)?));
+    println!("Part 2: {}", total_score(lines.map(second_parser)));
     Ok(())
 }
 
-// Parse input into a vector of rounds based on interpretation.
-fn parse_lines<F>(lines: impl Iterator<Item = String>, parser: F) -> AocResult<Vec<Round>>
-where
-    F: Fn(&str) -> AocResult<Round>,
-{
-    lines
-        .map(|line| parser(&line))
-        .collect()
-}
-
 // Parse an individual line into a Round using the first interpretation
-fn first_parser(line: &str) -> AocResult<Round> {
-    if let Some((opponent, myself)) = match line {
+fn first_parser(line: String) -> Option<Round> {
+    if let Some((opponent, myself)) = match line.as_str() {
         "A X" => Some((Selection::Rock, Selection::Rock)),
         "A Y" => Some((Selection::Rock, Selection::Paper)),
         "A Z" => Some((Selection::Rock, Selection::Scissors)),
@@ -33,15 +23,15 @@ fn first_parser(line: &str) -> AocResult<Round> {
         "C Z" => Some((Selection::Scissors, Selection::Scissors)),
         _ => None,
     } {
-        Ok(Round { myself, opponent })
+        Some(Round { myself, opponent })
     } else {
-        Err(ParseError("Invalid input.").into())
+        None
     }
 }
 
 // Parse an individual line into a Round using the second interpretation
-fn second_parser(line: &str) -> AocResult<Round> {
-    if let Some((opponent, outcome)) = match line {
+fn second_parser(line: String) -> Option<Round> {
+    if let Some((opponent, outcome)) = match line.as_str() {
         "A X" => Some((Selection::Rock, Outcome::Lose)),
         "A Y" => Some((Selection::Rock, Outcome::Draw)),
         "A Z" => Some((Selection::Rock, Outcome::Win)),
@@ -53,12 +43,12 @@ fn second_parser(line: &str) -> AocResult<Round> {
         "C Z" => Some((Selection::Scissors, Outcome::Win)),
         _ => None,
     } {
-        Ok(Round {
+        Some(Round {
             myself: my_selection(&opponent, &outcome),
             opponent,
         })
     } else {
-        Err(ParseError("Invalid input.").into())
+        None
     }
 }
 
@@ -118,12 +108,14 @@ fn outcome_score(myself: &Selection, opponent: &Selection) -> i32 {
     }
 }
 
-fn total_score(rounds: &Vec<Round>) -> i32 {
+fn total_score(rounds: impl Iterator<Item = Option<Round>>) -> i32 {
     rounds
-        .iter()
         .map(|round| {
-            let Round { myself, opponent } = round;
-            choice_score(myself) + outcome_score(myself, opponent)
+            if let Some(Round { myself, opponent }) = round {
+                choice_score(&myself) + outcome_score(&myself, &opponent)
+            } else {
+                0
+            }
         })
         .sum()
 }
@@ -133,18 +125,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_1_gives_correct_answer() -> AocResult<()>  {
+    fn test_part_1_gives_correct_answer() -> Result<()> {
         let lines = common::get_input_lines("day2")?;
-        let rounds = parse_lines(lines, first_parser)?;
-        assert_eq!(total_score(&rounds), 14264);
+        assert_eq!(total_score(lines.map(first_parser)), 14264);
         Ok(())
     }
 
     #[test]
-    fn test_part_2_gives_correct_answer() -> AocResult<()>  {
+    fn test_part_2_gives_correct_answer() -> Result<()> {
         let lines = common::get_input_lines("day2")?;
-        let rounds = parse_lines(lines, second_parser)?;
-        assert_eq!(total_score(&rounds), 12382);
+        assert_eq!(total_score(lines.map(second_parser)), 12382);
         Ok(())
     }
 }
