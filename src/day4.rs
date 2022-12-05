@@ -17,20 +17,22 @@ pub fn day4() -> Result<()> {
 //   S . . . E
 //     S . E
 fn part1(lines: impl Iterator<Item = String>) -> u16 {
-    parse_ranges(lines).fold(0, |acc, ranges| {
-        if let Some((first, second)) = ranges {
-            if first.0 >= second.0 && first.1 <= second.1 {
-                acc + 1
-            } else if second.0 >= first.0 && second.1 <= first.1 {
-                acc + 1
+    parse_ranges(lines)
+        .map(|ranges| {
+            if let Some((first, second)) = ranges {
+                if first.0 >= second.0 && first.1 <= second.1 {
+                    1
+                } else if second.0 >= first.0 && second.1 <= first.1 {
+                    1
+                } else {
+                    0
+                }
             } else {
-                acc
+                // Ignoring bad input
+                0
             }
-        } else {
-            // Ignoring bad input
-            acc
-        }
-    })
+        })
+        .sum()
 }
 
 // now we need to find if there is any overlap at all between the ranges.
@@ -38,24 +40,26 @@ fn part1(lines: impl Iterator<Item = String>) -> u16 {
 //   S . . . E
 //       S . . E
 fn part2(lines: impl Iterator<Item = String>) -> u16 {
-    parse_ranges(lines).fold(0, |acc, ranges| {
-        if let Some((first, second)) = ranges {
-            if first.0 >= second.0 && first.0 <= second.1 {
-                acc + 1
-            } else if first.1 >= second.0 && first.1 <= second.1 {
-                acc + 1
-            } else if second.0 >= first.0 && second.0 <= first.1 {
-                acc + 1
-            } else if second.1 >= first.0 && second.1 <= first.1 {
-                acc + 1
+    parse_ranges(lines)
+        .map(|ranges| {
+            if let Some((first, second)) = ranges {
+                if first.0 >= second.0 && first.0 <= second.1 {
+                    1
+                } else if first.1 >= second.0 && first.1 <= second.1 {
+                    1
+                } else if second.0 >= first.0 && second.0 <= first.1 {
+                    1
+                } else if second.1 >= first.0 && second.1 <= first.1 {
+                    1
+                } else {
+                    0
+                }
             } else {
-                acc
+                // Ignoring bad input
+                0
             }
-        } else {
-            // Ignoring bad input
-            acc
-        }
-    })
+        })
+        .sum()
 }
 
 // Parse "2-4,6-8" into ((2,4), (6,8))
