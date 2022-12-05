@@ -19,7 +19,7 @@ pub fn day3() -> AocResult<()> {
 // a -> 1 A -> 27
 // u8 reps are 97 and 65
 fn part1(lines: impl Iterator<Item = String>) -> AocResult<u16> {
-    let total = parse_compartments(lines)?
+    let total = parse_compartments(lines)
         .map(|(first, second)| {
             if let Some(item) = find_item(&first, &second) {
                 to_priority(&item)
@@ -33,14 +33,13 @@ fn part1(lines: impl Iterator<Item = String>) -> AocResult<u16> {
 
 fn parse_compartments(
     lines: impl Iterator<Item = String>,
-) -> AocResult<impl Iterator<Item = (HashSet<u8>, HashSet<u8>)>> {
-    let iter = lines.map(|line| {
+) -> impl Iterator<Item = (HashSet<u8>, HashSet<u8>)> {
+    lines.map(|line| {
         let half = line.len() / 2;
         let first = line.bytes().take(half).collect();
         let second = line.bytes().skip(half).collect();
         (first, second)
-    });
-    Ok(iter)
+    })
 }
 fn find_item(first: &HashSet<u8>, second: &HashSet<u8>) -> Option<u8> {
     // Should only be one item

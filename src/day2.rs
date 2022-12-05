@@ -35,7 +35,7 @@ fn first_parser(line: &str) -> AocResult<Round> {
     } {
         Ok(Round { myself, opponent })
     } else {
-        Err(ParseError::boxed("Invalid input."))
+        Err(ParseError("Invalid input.").into())
     }
 }
 
@@ -58,7 +58,7 @@ fn second_parser(line: &str) -> AocResult<Round> {
             opponent,
         })
     } else {
-        Err(ParseError::boxed("Invalid input."))
+        Err(ParseError("Invalid input.").into())
     }
 }
 
