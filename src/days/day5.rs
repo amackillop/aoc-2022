@@ -1,28 +1,50 @@
-use std::borrow::BorrowMut;
-use std::cell::{Cell, RefCell};
-use std::iter::from_fn;
-use std::{collections::VecDeque, ops::Add};
-use std::rc::Rc;
+use std::collections::VecDeque;
 
 use crate::common::{self, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 
 type Crate = char;
+type Stacks = Vec<VecDeque<Crate>>;
 
 type Amount = usize;
 type From = usize;
 type To = usize;
-type Step = (Amount, From, To);
+type Move = (Amount, From, To);
 
 pub fn solution() -> Result<()> {
+    println!("~~~~~~~~~~~~~ Day 5 ~~~~~~~~~~~~~");
     let day = "day5";
     let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
     let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
     let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
-    let steps = steps_lines.flat_map(parse_step);
-    println!("{}", compute_outcome(stacks, steps));
+    let moves = steps_lines.flat_map(parse_step);
+    println!("Part 1: {}", compute_outcome(part1_move_op, stacks, moves));
+    let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
+    let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
+    let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
+    let moves = steps_lines.flat_map(parse_step);
+    println!("Part 2: {}", compute_outcome(part2_move_op, stacks, moves));
     Ok(())
+}
+
+// Crates can only be moved one at a time
+fn part1_move_op(mut stacks: Stacks, move_: Move) -> Stacks {
+    let (amount, from, to) = move_;
+    for _ in 0..amount {
+        let crate_ = stacks[from].pop_back().unwrap();
+        stacks[to].push_back(crate_);
+    }
+    stacks
+}
+
+// Can move N crates at once
+fn part2_move_op(mut stacks: Stacks, move_: Move) -> Stacks {
+    let (amount, from, to) = move_;
+    let index = stacks[from].len() - amount;
+    let mut moved = stacks[from].split_off(index);
+    stacks[to].append(&mut moved);
+    stacks
 }
 
 // Parse:
@@ -30,7 +52,7 @@ pub fn solution() -> Result<()> {
 // [N] [C]     -->  [['Z', 'N'], ['M', 'C', 'D'], ['P']]
 // [Z] [M] [P]
 //  1   2   3
-fn parse_stacks(crate_lines: Vec<String>) -> Option<Vec<VecDeque<Crate>>> {
+fn parse_stacks(crate_lines: Vec<String>) -> Option<Stacks> {
     let (index_line, crate_lines) = crate_lines.split_last()?;
     let width = index_line.chars().next_back()?.to_digit(10)?;
     let mut stacks = vec![VecDeque::<Crate>::new(); width as usize];
@@ -58,36 +80,34 @@ fn parse_crate_line(line: &String) -> Vec<Option<Crate>> {
 }
 
 // Parse "move 1 from 2 to 3" into (1, 1, 2). (Converting to zero-index values)
-fn parse_step(step_line: String) -> Option<Step> {
+fn parse_step(move_line: String) -> Option<Move> {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"\d+").unwrap();
     }
-    let mut numbers = RE.find_iter(&step_line).flat_map(|m| m.as_str().parse());
-    Some((numbers.next()?, numbers.next()? - 1, numbers.next()? - 1))
+    if let [amount, from, to] = RE
+        .find_iter(&move_line)
+        .flat_map(|m| m.as_str().parse())
+        .collect::<Vec<usize>>()[..]
+    {
+        Some((amount, from - 1, to - 1))
+    } else {
+        None
+    }
 }
 
-fn compute_outcome(
-    stacks: Vec<VecDeque<Crate>>,
-    steps: impl Iterator<Item = Step>,
-) -> String {
-    let stacks: Vec<RefCell<VecDeque<Crate>>> = stacks.into_iter().map(|s| RefCell::new(s)).collect();
-    let final_stacks = steps.fold(stacks, |stacks, step| {
-        let (amount, from, to) = step;
-        // Part 1
-        // for _ in 0 .. amount {
-            // stacks[to].borrow_mut().push_back(stacks[from].borrow_mut().pop_back().unwrap());
-    //  }
-        let index = stacks[from].borrow().len() - amount;
-        let mut moved = stacks[from].borrow_mut().split_off(index);
-        stacks[to].borrow_mut().append(&mut moved);
-        stacks
-    });
-
-    let mut outcome = "".to_string();
-    for stack in final_stacks.into_iter() {
-        outcome.push(*stack.take().back().unwrap());
-    }
-    outcome
+// Take the initial stacks, apply the moves, then return the string formed from
+// the characters at the top of the stacks
+fn compute_outcome<F>(move_op: F, stacks: Stacks, moves: impl Iterator<Item = Move>) -> String
+where
+    F: Fn(Stacks, Move) -> Stacks,
+{
+    let final_stacks = moves.fold(stacks, |stacks, move_| move_op(stacks, move_));
+    final_stacks
+        .iter()
+        .fold("".to_string(), |mut outcome, stack| {
+            outcome.push(*stack.back().unwrap());
+            outcome
+        })
 }
 
 #[cfg(test)]
@@ -141,7 +161,7 @@ mod tests {
         ];
         let steps = vec![(1, 1, 0), (3, 0, 2), (2, 1, 0), (1, 0, 1)];
         assert_eq!(
-            compute_outcome(stacks, steps.into_iter()),
+            compute_outcome(part1_move_op, stacks, steps.into_iter()),
             "CMZ"
         );
         Ok(())
