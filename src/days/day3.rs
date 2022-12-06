@@ -19,7 +19,8 @@ pub fn solution() -> Result<()> {
 // a -> 1 A -> 27
 // u8 reps are 97 and 65
 fn part1(lines: impl Iterator<Item = String>) -> u16 {
-    parse_compartments(lines)
+    lines
+        .map(parse_compartments)
         .map(|(first, second)| {
             if let Some(item) = find_item(&first, &second) {
                 to_priority(&item)
@@ -31,16 +32,13 @@ fn part1(lines: impl Iterator<Item = String>) -> u16 {
         .sum()
 }
 
-fn parse_compartments(
-    lines: impl Iterator<Item = String>,
-) -> impl Iterator<Item = (HashSet<u8>, HashSet<u8>)> {
-    lines.map(|line| {
-        let half = line.len() / 2;
-        let first = line.bytes().take(half).collect();
-        let second = line.bytes().skip(half).collect();
-        (first, second)
-    })
+fn parse_compartments(line: String) -> (HashSet<u8>, HashSet<u8>) {
+    let half = line.len() / 2;
+    let first = line.bytes().take(half).collect();
+    let second = line.bytes().skip(half).collect();
+    (first, second)
 }
+
 fn find_item(first: &HashSet<u8>, second: &HashSet<u8>) -> Option<u8> {
     // Should only be one item
     first.intersection(second).next().map(|item| *item)
@@ -59,8 +57,9 @@ fn to_priority(byte: &u8) -> u16 {
 // Chunk the sets in groups of three and take the intersection to find the badge
 // Then calculate and sum the priorities
 fn part2(lines: impl Iterator<Item = String>) -> u16 {
-    parse_sacks(lines)
-        .collect::<Vec<HashSet<u8>>>()
+    lines
+        .map(|line| line.bytes().collect::<HashSet<u8>>())
+        .collect::<Vec<_>>()
         .chunks(3)
         .map(|sets| {
             // This should always match given correct input
@@ -71,10 +70,6 @@ fn part2(lines: impl Iterator<Item = String>) -> u16 {
             }
         })
         .sum()
-}
-
-fn parse_sacks(lines: impl Iterator<Item = String>) -> impl Iterator<Item = HashSet<u8>> {
-    lines.map(|line| line.bytes().collect())
 }
 
 fn find_badge(sets: &[HashSet<u8>]) -> Option<u8> {
@@ -92,7 +87,8 @@ fn find_badge(sets: &[HashSet<u8>]) -> Option<u8> {
 // Same as other one except uses iterator directly. Unfortunately there seems to
 // be no direct method for chunking an iterator
 fn part2_v2(lines: impl Iterator<Item = String>) -> u16 {
-    parse_sacks(lines)
+    lines
+        .map(|line| line.bytes().collect::<HashSet<u8>>())
         .fold((0, vec![]), |(total, mut chunk), set| {
             chunk.push(set);
             if chunk.len() == 3 {
