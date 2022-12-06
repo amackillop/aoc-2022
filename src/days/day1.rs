@@ -1,6 +1,6 @@
 use crate::common::{get_input_lines, Result};
 
-pub fn day1() -> Result<()> {
+pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 1 ~~~~~~~~~~~~~");
     let input = get_input_lines("day1")?;
     let calorie_counts = parse_input(input);

@@ -1,6 +1,6 @@
 use crate::common::{self, Result};
 
-pub fn day4() -> Result<()> {
+pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 4 ~~~~~~~~~~~~~");
     let lines = common::get_input_lines("day4")?;
     println!("Part 1: {}", part1(lines));

@@ -11,4 +11,3 @@ pub fn get_input_lines(day: &str) -> Result<impl Iterator<Item = String>> {
     let file = File::open(format!("./input/{day}.txt"))?;
     Ok(io::BufReader::new(file).lines().map(|l| l.unwrap()))
 }
-

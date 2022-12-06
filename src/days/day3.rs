@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::common::{self, Result};
 
-pub fn day3() -> Result<()> {
+pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 3 ~~~~~~~~~~~~~");
     let lines = common::get_input_lines("day3")?;
     println!("Part 1: {}", part1(lines));

@@ -1,6 +1,6 @@
 use crate::common::{self, Result};
 
-pub fn day2() -> Result<()> {
+pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 2 ~~~~~~~~~~~~~");
     let lines = common::get_input_lines("day2")?;
     println!("Part 1: {}", total_score(lines.map(first_parser)));
