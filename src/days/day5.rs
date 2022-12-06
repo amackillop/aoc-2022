@@ -57,9 +57,9 @@ fn parse_stacks(crate_lines: Vec<String>) -> Option<Stacks> {
     let width = index_line.chars().next_back()?.to_digit(10)?;
     let mut stacks = vec![VecDeque::<Crate>::new(); width as usize];
     for line in crate_lines {
-        for (index, maybe_crate) in parse_crate_line(line).iter().enumerate() {
+        for (index, maybe_crate) in parse_crate_line(line).enumerate() {
             if let Some(crate_) = maybe_crate {
-                stacks[index].push_front(*crate_);
+                stacks[index].push_front(crate_);
             }
         }
     }
@@ -67,16 +67,14 @@ fn parse_stacks(crate_lines: Vec<String>) -> Option<Stacks> {
 }
 
 // Parse: "    [G] [R]     [P]" into [None, Some('G'), Some('R'), None, Some('P')]
-fn parse_crate_line(line: &String) -> Vec<Option<Crate>> {
+fn parse_crate_line(line: &String) -> impl Iterator<Item = Option<Crate>> + '_ {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"(\s{4})|(\w{1})").unwrap();
     }
-    RE.captures_iter(&line)
-        .map(|c| match &c[0] {
-            "    " => None,
-            _ => c[0].chars().next(),
-        })
-        .collect()
+    RE.captures_iter(&line).map(|c| match &c[0] {
+        "    " => None,
+        _ => c[0].chars().next(),
+    })
 }
 
 // Parse "move 1 from 2 to 3" into (1, 1, 2). (Converting to zero-index values)
@@ -127,7 +125,7 @@ mod tests {
     fn test_parse_crate_line() -> Result<()> {
         let line = "    [G] [R]         [P]".to_string();
         assert_eq!(
-            parse_crate_line(&line),
+            parse_crate_line(&line).collect::<Vec<Option<Crate>>>(),
             vec![None, Some('G'), Some('R'), None, None, Some('P')]
         );
         Ok(())
@@ -166,4 +164,29 @@ mod tests {
         );
         Ok(())
     }
+
+
+    #[test]
+    fn test_part_one() -> Result<()> {
+        let day = "day5";
+        let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
+        let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
+        let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
+        let moves = steps_lines.flat_map(parse_step);
+        assert_eq!(compute_outcome(part1_move_op, stacks, moves), "VCTFTJQCG");
+        Ok(())
+    }
+
+    #[test]
+    fn test_part_two() -> Result<()> {
+        let day = "day5";
+        let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
+        let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
+        let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
+        let moves = steps_lines.flat_map(parse_step);
+        assert_eq!(compute_outcome(part2_move_op, stacks, moves), "GCFGLDNJZ");
+        Ok(())
+    }
+
+
 }
