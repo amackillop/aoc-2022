@@ -5,33 +5,41 @@ pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 6 ~~~~~~~~~~~~~");
 
     let input = fs::read_to_string(format!("./input/day6.txt"))?;
-    println!("Part 1: {}", find_first_marker(&input, 4));
-    println!("Part 2: {}", find_first_marker(&input, 14));
+    println!(
+        "Part 1: {}",
+        find_first_marker(&input, 4).ok_or("No marker found.")?
+    );
+    println!(
+        "Part 2: {}",
+        find_first_marker(&input, 14).ok_or("No marker found.")?
+    );
     Ok(())
 }
 
-fn find_first_marker(input: &String, buffer_size: usize) -> usize {
-    let mut index = buffer_size;
-    for buf in input.as_bytes().windows(buffer_size) {
+fn find_first_marker(input: &String, buffer_size: usize) -> Option<usize> {
+    for (index, buf) in input.as_bytes().windows(buffer_size).enumerate() {
         if buf.iter().collect::<HashSet<&u8>>().len() == buffer_size {
-            break;
-        } else {
-            index += 1;
+            return Some(index + buffer_size);
         }
     }
-    index
+    return None;
 }
 
-#[test]
-fn test_part_one() -> Result<()> {
-    let input = fs::read_to_string(format!("./input/day6.txt"))?;
-    assert_eq!(find_first_marker(&input, 4), 1544);
-    Ok(())
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn test_part_two() -> Result<()> {
-    let input = fs::read_to_string(format!("./input/day6.txt"))?;
-    assert_eq!(find_first_marker(&input, 14), 2145);
-    Ok(())
+    #[test]
+    fn test_part_one() -> Result<()> {
+        let input = fs::read_to_string(format!("./input/day6.txt"))?;
+        assert_eq!(find_first_marker(&input, 4), Some(1544));
+        Ok(())
+    }
+
+    #[test]
+    fn test_part_two() -> Result<()> {
+        let input = fs::read_to_string(format!("./input/day6.txt"))?;
+        assert_eq!(find_first_marker(&input, 14), Some(2145));
+        Ok(())
+    }
 }
