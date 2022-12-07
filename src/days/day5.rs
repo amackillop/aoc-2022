@@ -15,11 +15,13 @@ type Move = (Amount, From, To);
 pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 5 ~~~~~~~~~~~~~");
     let day = "day5";
+
     let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
     let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
     let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
     let moves = steps_lines.flat_map(parse_step);
     println!("Part 1: {}", compute_outcome(part1_move_op, stacks, moves));
+
     let crate_lines = common::get_input_lines(day)?.take_while(|line| line != "");
     let steps_lines = common::get_input_lines(day)?.skip_while(|line| !line.starts_with("move"));
     let stacks = parse_stacks(crate_lines.collect()).ok_or("Invalid input.")?;
