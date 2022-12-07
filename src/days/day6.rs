@@ -9,38 +9,36 @@ pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 6 ~~~~~~~~~~~~~");
 
     let input = fs::read_to_string(format!("./input/day6.txt"))?;
-    println!(
-        "Part 1: {}",
-        find_first_marker(&input, 4).ok_or("No marker found.")?
-    );
-    println!(
-        "Part 2: {}",
-        find_first_marker(&input, 14).ok_or("No marker found.")?
-    );
+    println!("Part 1: {}", find_first_marker(&input, 4)?);
+    println!("Part 2: {}", find_first_marker(&input, 14)?);
     Ok(())
 }
 
-// Use a sliding window and simply check if the window contains distinct values
-fn find_first_marker(input: &String, buffer_size: usize) -> Option<usize> {
-    for (index, buf) in input.as_bytes().windows(buffer_size).enumerate() {
-        if buf.iter().collect::<HashSet<&u8>>().len() == buffer_size {
-            return Some(index + buffer_size);
+// Iterate through sliding windows and simply check if the window contains
+// distinct values using a hash set.
+fn find_first_marker(input: &String, window_size: usize) -> Result<usize> {
+    for (index, buf) in input.as_bytes().windows(window_size).enumerate() {
+        if buf.iter().collect::<HashSet<&u8>>().len() == window_size {
+            return Ok(index + window_size);
         }
     }
-    return None;
+    return Err("No marker found.".into());
 }
 
-fn find_first_marker_optimized(input: &String, buffer_size: usize) -> Option<usize> {
+// Use a FIFO queue as the sliding window and a hash map to keep track of the
+// count of each item in the queue. When the count goes to zero, remove the item
+// from the hash map. If the length of the hash map matches the length of the
+// queue, then all items in the queue must be distinct.
+fn find_first_marker_optimized(input: &String, window_size: usize) -> Result<usize> {
     let mut unique = HashMap::<u8, usize>::new();
-    for byte in input.bytes().take(buffer_size) {
+    for byte in input.bytes().take(window_size) {
         unique.entry(byte).and_modify(|c| *c += 1).or_insert(1);
     }
 
-    // Use a FIFO
-    let mut buf: VecDeque<u8> = input.bytes().take(buffer_size).collect();
-    for (index, byte) in input.bytes().skip(buffer_size).enumerate() {
-        if unique.len() == buffer_size {
-            return Some(index + buffer_size);
+    let mut buf: VecDeque<u8> = input.bytes().take(window_size).collect();
+    for (index, byte) in input.bytes().skip(window_size).enumerate() {
+        if unique.len() == window_size {
+            return Ok(index + window_size);
         }
 
         let dropped = buf.pop_front().unwrap();
@@ -54,25 +52,25 @@ fn find_first_marker_optimized(input: &String, buffer_size: usize) -> Option<usi
         buf.push_back(byte);
         unique.entry(byte).and_modify(|c| *c += 1).or_insert(1);
     }
-    return None;
+    return Err("No marker found.".into());
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::{black_box, Bencher};
+    use test::Bencher;
 
     #[test]
     fn test_part_one() -> Result<()> {
         let input = fs::read_to_string(format!("./input/day6.txt"))?;
-        assert_eq!(find_first_marker(&input, 4), Some(1544));
+        assert_eq!(find_first_marker(&input, 4)?, 1544);
         Ok(())
     }
 
     #[test]
     fn test_part_two() -> Result<()> {
         let input = fs::read_to_string(format!("./input/day6.txt"))?;
-        assert_eq!(find_first_marker(&input, 14), Some(2145));
+        assert_eq!(find_first_marker(&input, 14)?, 2145);
         Ok(())
     }
 
