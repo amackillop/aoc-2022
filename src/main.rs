@@ -1,3 +1,5 @@
+#![feature(test)]
+
 mod common;
 mod days;
 
