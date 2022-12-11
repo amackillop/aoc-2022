@@ -1,4 +1,4 @@
-use crate::common::Result;
+use crate::days::common::Result;
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     fs,

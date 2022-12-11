@@ -1,7 +1,5 @@
-use crate::common::Result;
-use core::num;
-use std::fmt::{Debug, Display};
-use std::{collections::HashSet, fs, iter::Enumerate, usize::MIN, vec};
+use crate::days::common::Result;
+use std::{collections::HashSet, fs, vec};
 extern crate test;
 
 pub fn solution<'a>() -> Result<()> {
@@ -24,27 +22,8 @@ fn part1(input: &str) -> Option<usize> {
 fn part2(input: &str) -> Option<usize> {
     let rows = build_grid2(input);
     let cols = transpose(&rows);
-    let row_score_vecs: Vec<Vec<usize>> = rows
-        .iter()
-        .map(|row| {
-            row.iter()
-                .enumerate()
-                .map(|(index, _)| view_score(index, row))
-                .collect()
-        })
-        .collect();
-
-    let col_score_vecs: Vec<Vec<usize>> = transpose(
-        &cols
-            .iter()
-            .map(|col| {
-                col.iter()
-                    .enumerate()
-                    .map(|(index, _)| view_score(index, col))
-                    .collect()
-            })
-            .collect(),
-    );
+    let row_score_vecs = compute_row_scores(rows);
+    let col_score_vecs: Vec<Vec<usize>> = transpose(&compute_row_scores(cols));
 
     row_score_vecs
         .iter()
@@ -67,7 +46,7 @@ fn visible<T: Ord>(rows: &Vec<Vec<(usize, usize, T)>>) -> HashSet<(&usize, &usiz
         for (i, j, tree) in &row[1..row.len() - 1] {
             if tree > tallest {
                 visible_set.insert((i, j));
-                tallest = tree
+                tallest = tree;
             }
         }
 
@@ -84,6 +63,17 @@ fn visible<T: Ord>(rows: &Vec<Vec<(usize, usize, T)>>) -> HashSet<(&usize, &usiz
         }
     }
     visible_set
+}
+
+fn compute_row_scores(rows: Vec<Vec<char>>) -> Vec<Vec<usize>> {
+    rows.iter()
+        .map(|row| {
+            row.iter()
+                .enumerate()
+                .map(|(index, _)| view_score(index, row))
+                .collect()
+        })
+        .collect()
 }
 
 fn view_score<T: Ord>(index: usize, row: &Vec<T>) -> usize {

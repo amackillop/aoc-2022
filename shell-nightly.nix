@@ -19,6 +19,8 @@ pkgs.mkShell {
   ] ++ (with pkgs; [
     rust-analyzer
     pkg-config
+    rustfmt
+    clippy
     # other dependencies
     #gtk3
     #wrapGAppsHook

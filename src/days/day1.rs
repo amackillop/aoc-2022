@@ -1,4 +1,4 @@
-use crate::common::{get_input_lines, Result};
+use crate::days::common::{get_input_lines, Result};
 
 pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 1 ~~~~~~~~~~~~~");

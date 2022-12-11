@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::common::{self, Result};
+use crate::days::common::{self, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 

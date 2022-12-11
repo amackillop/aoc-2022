@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::common::{self, Result};
+use crate::days::common::{self, Result};
 
 pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 3 ~~~~~~~~~~~~~");
