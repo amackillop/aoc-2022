@@ -1,6 +1,6 @@
 use crate::days::common::Result;
 use std::{collections::HashSet, fs, vec};
-extern crate test;
+// extern crate test;
 
 pub fn solution<'a>() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 8 ~~~~~~~~~~~~~");
@@ -138,7 +138,7 @@ fn transpose<T: Copy>(grid: &Vec<Vec<T>>) -> Vec<Vec<T>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::Bencher;
+    // use test::Bencher;
 
     #[test]
     fn test_transpose() -> Result<()> {
@@ -173,17 +173,17 @@ mod tests {
         Ok(())
     }
 
-    #[bench]
-    fn bench_part_one(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(format!("./input/day8.txt"))?;
-        b.iter(|| part1(&input));
-        Ok(())
-    }
+    // #[bench]
+    // fn bench_part_one(b: &mut Bencher) -> Result<()> {
+    //     let input = fs::read_to_string(format!("./input/day8.txt"))?;
+    //     b.iter(|| part1(&input));
+    //     Ok(())
+    // }
 
-    #[bench]
-    fn bench_part_two(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(format!("./input/day8.txt"))?;
-        b.iter(|| part2(&input));
-        Ok(())
-    }
+    // #[bench]
+    // fn bench_part_two(b: &mut Bencher) -> Result<()> {
+    //     let input = fs::read_to_string(format!("./input/day8.txt"))?;
+    //     b.iter(|| part2(&input));
+    //     Ok(())
+    // }
 }

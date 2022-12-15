@@ -3,7 +3,7 @@ use std::{
     collections::{HashMap, HashSet, VecDeque},
     fs,
 };
-extern crate test;
+// extern crate test;
 
 pub fn solution() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 6 ~~~~~~~~~~~~~");
@@ -58,7 +58,7 @@ fn find_first_marker_optimized(input: &String, window_size: usize) -> Result<usi
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::Bencher;
+    // use test::Bencher;
 
     #[test]
     fn test_part_one() -> Result<()> {
@@ -74,17 +74,17 @@ mod tests {
         Ok(())
     }
 
-    #[bench]
-    fn bench_find_first_marker(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(format!("./input/day6.txt"))?;
-        b.iter(|| find_first_marker(&input, 14));
-        Ok(())
-    }
+    // #[bench]
+    // fn bench_find_first_marker(b: &mut Bencher) -> Result<()> {
+    //     let input = fs::read_to_string(format!("./input/day6.txt"))?;
+    //     b.iter(|| find_first_marker(&input, 14));
+    //     Ok(())
+    // }
 
-    #[bench]
-    fn bench_find_first_marker_optimized(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(format!("./input/day6.txt"))?;
-        b.iter(|| find_first_marker_optimized(&input, 14));
-        Ok(())
-    }
+    // #[bench]
+    // fn bench_find_first_marker_optimized(b: &mut Bencher) -> Result<()> {
+    //     let input = fs::read_to_string(format!("./input/day6.txt"))?;
+    //     b.iter(|| find_first_marker_optimized(&input, 14));
+    //     Ok(())
+    // }
 }
