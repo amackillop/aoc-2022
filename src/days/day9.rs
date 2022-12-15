@@ -59,6 +59,7 @@ fn part2(input: &str) -> usize {
     let (visited, _) = input.lines().flat_map(parse_moves).flatten().fold(
         (HashSet::<Point>::new(), rope),
         |(mut visited, mut rope), direction| {
+            println!("{:?}", rope);
             let head = rope.pop_front().unwrap();
             let new_head = match direction {
                 Direction::Up => Point(head.0, head.1 + 1),
@@ -70,13 +71,45 @@ fn part2(input: &str) -> usize {
             let tail = rope.pop_back().unwrap();
             visited.insert(tail);
             rope.push_back(tail);
-            (visited, move_rope(rope, direction))
+
+            let new_rope = move_rope_fold(rope);
+            (visited, new_rope)
         },
     );
     visited.len() + 1
 }
 
-fn move_rope(mut rope: VecDeque<Point>, direction: Direction) -> VecDeque<Point> {
+fn move_rope_fold(mut rope: VecDeque<Point>) -> VecDeque<Point> {
+    let head = rope.pop_front().unwrap();
+    rope.iter().fold(VecDeque::from([head]), |mut rope, knot| {
+        let previous_knot = rope.pop_back().unwrap();
+        let (move_x, move_y) = match previous_knot.difference(&knot) {
+            (0, 2) => (0, 1),
+            (1, 2) => (1, 1),
+            (2, 2) => (1, 1),
+            (2, 1) => (1, 1),
+            (2, 0) => (1, 0),
+            (2, -1) => (1, -1),
+            (2, -2) => (1, -1),
+            (1, -2) => (1, -1),
+            (0, -2) => (0, -1),
+            (-1, -2) => (-1, -1),
+            (-2, -2) => (-1, -1),
+            (-2, -1) => (-1, -1),
+            (-2, 0) => (-1, 0),
+            (-2, 1) => (-1, 1),
+            (-2, 2) => (-1, 1),
+            (-1, 2) => (-1, 1),
+            _ => (0, 0)
+        };
+        let new_knot = Point(knot.0 + move_x, knot.1 + move_y);
+        rope.push_back(previous_knot);
+        rope.push_back(new_knot);
+        rope
+    })
+}
+
+fn move_rope(mut rope: VecDeque<Point>) -> VecDeque<Point> {
     let head = rope.pop_front().unwrap();
     if let Some(next_knot) = rope.pop_front() {
             let (move_x, move_y) = match head.difference(&next_knot) {
@@ -100,7 +133,7 @@ fn move_rope(mut rope: VecDeque<Point>, direction: Direction) -> VecDeque<Point>
             };
             let new_knot = Point(next_knot.0 + move_x, next_knot.1 + move_y);
             rope.push_front(new_knot);
-            let mut rope = move_rope(rope, direction);
+            let mut rope = move_rope(rope);
             rope.push_front(head);
             rope
     } else {
