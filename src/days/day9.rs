@@ -6,8 +6,6 @@ use std::{
 };
 extern crate test;
 
-const INPUT: &str = "./input/day9.txt";
-
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 struct Point(i16, i16);
 
@@ -17,62 +15,43 @@ impl Point {
     }
 }
 
+#[derive(Clone)]
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+const INPUT: &str = "./input/day9.txt";
 pub fn solution<'a>() -> Result<()> {
     println!("~~~~~~~~~~~~~ Day 9 ~~~~~~~~~~~~~");
     let input = fs::read_to_string(INPUT)?;
-    println!("Part 1: {}", part1(&input));
-    println!("Part 2: {}", part2(&input));
+    println!("Part 1: {}", count_unique_tail_positions(&input, 2));
+    println!("Part 2: {}", count_unique_tail_positions(&input, 10));
     Ok(())
 }
 
-fn part1(input: &str) -> usize {
-    let (visited, _, _) = input.lines().flat_map(parse_moves).flatten().fold(
-        (HashSet::from([Point(0, 0)]), Point(0, 0), Point(0, 0)),
-        |(mut visited, head, tail), direction| {
-            let new_head = match direction {
-                Direction::Up => Point(head.0, head.1 + 1),
-                Direction::Down => Point(head.0, head.1 - 1),
-                Direction::Left => Point(head.0 - 1, head.1),
-                Direction::Right => Point(head.0 + 1, head.1),
-            };
-            let (x_diff, y_diff) = new_head.difference(&tail);
-            if x_diff.abs() == 2 || y_diff.abs() == 2 {
-                visited.insert(head);
-                (visited, new_head, head)
-            } else {
-                (visited, new_head, tail)
-            }
-        },
-    );
+fn count_unique_tail_positions(input: &str, size_of_rope: usize) -> usize {
+    let mut rope = VecDeque::from_iter(repeat(Point(0, 0)).take(size_of_rope));
+    let mut visited: HashSet<Point> = HashSet::new();
+    for direction in input.lines().flat_map(parse_moves).flatten() {
+        let head = rope.pop_front().unwrap();
+        let new_head = match direction {
+            Direction::Up => Point(head.0, head.1 + 1),
+            Direction::Down => Point(head.0, head.1 - 1),
+            Direction::Left => Point(head.0 - 1, head.1),
+            Direction::Right => Point(head.0 + 1, head.1),
+        };
+        let next_knot = rope.front().unwrap();
+        let (x_diff, y_diff) = new_head.difference(&next_knot);
+        rope.push_front(new_head);
+        if x_diff.abs() == 2 || y_diff.abs() == 2 {
+            rope = move_rope(rope);
+            visited.insert(*rope.back().unwrap());
+        };
+    }
     visited.len()
-}
-
-fn part2(input: &str) -> usize {
-    let rope = VecDeque::from_iter(repeat(Point(0, 0)).take(10));
-    let (visited, _) = input.lines().flat_map(parse_moves).flatten().fold(
-        (HashSet::<Point>::new(), rope),
-        |(mut visited, mut rope), direction| {
-            let head = rope.pop_front().unwrap();
-            let new_head = match direction {
-                Direction::Up => Point(head.0, head.1 + 1),
-                Direction::Down => Point(head.0, head.1 - 1),
-                Direction::Left => Point(head.0 - 1, head.1),
-                Direction::Right => Point(head.0 + 1, head.1),
-            };
-            let next_knot = rope.front().unwrap();
-            let (x_diff, y_diff) = new_head.difference(&next_knot);
-            rope.push_front(new_head);
-            if x_diff.abs() == 2 || y_diff.abs() == 2 {
-                // Tail could move so log position.
-                let tail = rope.back().unwrap();
-                visited.insert(*tail);
-                (visited, move_rope(rope))
-            } else {
-                (visited, rope)
-            }
-        },
-    );
-    visited.len() + 1
 }
 
 fn move_rope(rope: VecDeque<Point>) -> VecDeque<Point> {
@@ -91,14 +70,6 @@ fn move_rope(rope: VecDeque<Point>) -> VecDeque<Point> {
         }
     }
     new_rope
-}
-
-#[derive(Clone)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
 }
 
 fn parse_moves(line: &str) -> Option<Vec<Direction>> {
@@ -123,28 +94,21 @@ mod tests {
     #[test]
     fn test_part_one() -> Result<()> {
         let input = fs::read_to_string(INPUT)?;
-        assert_eq!(part1(&input), 6406);
+        assert_eq!(count_unique_tail_positions(&input, 2), 6406);
         Ok(())
     }
 
     #[test]
     fn test_part_two() -> Result<()> {
         let input = fs::read_to_string(INPUT)?;
-        assert_eq!(part2(&input), 2643);
+        assert_eq!(count_unique_tail_positions(&input, 10), 2643);
         Ok(())
     }
 
     #[bench]
-    fn bench_part_one(b: &mut Bencher) -> Result<()> {
+    fn bench_count_tail_positions(b: &mut Bencher) -> Result<()> {
         let input = fs::read_to_string(INPUT)?;
-        b.iter(|| part1(&input));
-        Ok(())
-    }
-
-    #[bench]
-    fn bench_part_two(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(INPUT)?;
-        b.iter(|| part2(&input));
+        b.iter(|| count_unique_tail_positions(&input, 10));
         Ok(())
     }
 }
