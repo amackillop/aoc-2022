@@ -1,6 +1,6 @@
 use crate::days::common::Result;
 use std::{
-    collections::{vec_deque, HashSet, VecDeque},
+    collections::{HashSet, VecDeque},
     fs,
     iter::repeat,
 };
@@ -12,12 +12,6 @@ const INPUT: &str = "./input/day9.txt";
 struct Point(i16, i16);
 
 impl Point {
-    fn distance_between(&self, other: &Point) -> f32 {
-        let Point(x0, y0) = other;
-        let Point(x1, y1) = self;
-        f32::sqrt(((x1 - x0).pow(2) + (y1 - y0).pow(2)).into())
-    }
-
     fn difference(&self, other: &Point) -> (i16, i16) {
         (self.0 - other.0, self.1 - other.1)
     }
@@ -32,10 +26,8 @@ pub fn solution<'a>() -> Result<()> {
 }
 
 fn part1(input: &str) -> usize {
-    let head = Point(0, 0);
-    let tail = Point(0, 0);
     let (visited, _, _) = input.lines().flat_map(parse_moves).flatten().fold(
-        (HashSet::from([Point(0, 0)]), head, tail),
+        (HashSet::from([Point(0, 0)]), Point(0, 0), Point(0, 0)),
         |(mut visited, head, tail), direction| {
             let new_head = match direction {
                 Direction::Up => Point(head.0, head.1 + 1),
@@ -43,11 +35,12 @@ fn part1(input: &str) -> usize {
                 Direction::Left => Point(head.0 - 1, head.1),
                 Direction::Right => Point(head.0 + 1, head.1),
             };
-            if new_head.distance_between(&tail) < 2.0 {
-                (visited, new_head, tail)
-            } else {
+            let (x_diff, y_diff) = new_head.difference(&tail);
+            if x_diff.abs() == 2 || y_diff.abs() == 2 {
                 visited.insert(head);
                 (visited, new_head, head)
+            } else {
+                (visited, new_head, tail)
             }
         },
     );
@@ -59,7 +52,6 @@ fn part2(input: &str) -> usize {
     let (visited, _) = input.lines().flat_map(parse_moves).flatten().fold(
         (HashSet::<Point>::new(), rope),
         |(mut visited, mut rope), direction| {
-            println!("{:?}", rope);
             let head = rope.pop_front().unwrap();
             let new_head = match direction {
                 Direction::Up => Point(head.0, head.1 + 1),
@@ -67,79 +59,38 @@ fn part2(input: &str) -> usize {
                 Direction::Left => Point(head.0 - 1, head.1),
                 Direction::Right => Point(head.0 + 1, head.1),
             };
+            let next_knot = rope.front().unwrap();
+            let (x_diff, y_diff) = new_head.difference(&next_knot);
             rope.push_front(new_head);
-            let tail = rope.pop_back().unwrap();
-            visited.insert(tail);
-            rope.push_back(tail);
-
-            let new_rope = move_rope_fold(rope);
-            (visited, new_rope)
+            if x_diff.abs() == 2 || y_diff.abs() == 2 {
+                // Tail could move so log position.
+                let tail = rope.back().unwrap();
+                visited.insert(*tail);
+                (visited, move_rope(rope))
+            } else {
+                (visited, rope)
+            }
         },
     );
     visited.len() + 1
 }
 
-fn move_rope_fold(mut rope: VecDeque<Point>) -> VecDeque<Point> {
-    let head = rope.pop_front().unwrap();
-    rope.iter().fold(VecDeque::from([head]), |mut rope, knot| {
-        let previous_knot = rope.pop_back().unwrap();
-        let (move_x, move_y) = match previous_knot.difference(&knot) {
-            (0, 2) => (0, 1),
-            (1, 2) => (1, 1),
-            (2, 2) => (1, 1),
-            (2, 1) => (1, 1),
-            (2, 0) => (1, 0),
-            (2, -1) => (1, -1),
-            (2, -2) => (1, -1),
-            (1, -2) => (1, -1),
-            (0, -2) => (0, -1),
-            (-1, -2) => (-1, -1),
-            (-2, -2) => (-1, -1),
-            (-2, -1) => (-1, -1),
-            (-2, 0) => (-1, 0),
-            (-2, 1) => (-1, 1),
-            (-2, 2) => (-1, 1),
-            (-1, 2) => (-1, 1),
-            _ => (0, 0)
-        };
-        let new_knot = Point(knot.0 + move_x, knot.1 + move_y);
-        rope.push_back(previous_knot);
-        rope.push_back(new_knot);
-        rope
-    })
-}
-
-fn move_rope(mut rope: VecDeque<Point>) -> VecDeque<Point> {
-    let head = rope.pop_front().unwrap();
-    if let Some(next_knot) = rope.pop_front() {
-            let (move_x, move_y) = match head.difference(&next_knot) {
-                (0, 2) => (0, 1),
-                (1, 2) => (1, 1),
-                (2, 2) => (1, 1),
-                (2, 1) => (1, 1),
-                (2, 0) => (1, 0),
-                (2, -1) => (1, -1),
-                (2, -2) => (1, -1),
-                (1, -2) => (1, -1),
-                (0, -2) => (0, -1),
-                (-1, -2) => (-1, -1),
-                (-2, -2) => (-1, -1),
-                (-2, -1) => (-1, -1),
-                (-2, 0) => (-1, 0),
-                (-2, 1) => (-1, 1),
-                (-2, 2) => (-1, 1),
-                (-1, 2) => (-1, 1),
-                _ => (0, 0)
-            };
-            let new_knot = Point(next_knot.0 + move_x, next_knot.1 + move_y);
-            rope.push_front(new_knot);
-            let mut rope = move_rope(rope);
-            rope.push_front(head);
-            rope
-    } else {
-        rope.push_front(head);
-        rope
-    }
+fn move_rope(rope: VecDeque<Point>) -> VecDeque<Point> {
+    let head = rope.front().unwrap();
+    rope.iter()
+        .skip(1)
+        .fold(VecDeque::from([*head]), |mut rope, knot| {
+            let previous_knot = rope.back().unwrap();
+            let (x_diff, y_diff) = previous_knot.difference(&knot);
+            if x_diff.abs() == 2 || y_diff.abs() == 2 {
+                let new_knot = Point(knot.0 + x_diff.signum(), knot.1 + y_diff.signum());
+                rope.push_back(new_knot);
+                rope
+            } else {
+                rope.push_back(*knot);
+                rope
+            }
+        })
 }
 
 #[derive(Clone)]
