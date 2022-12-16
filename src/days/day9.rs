@@ -76,21 +76,21 @@ fn part2(input: &str) -> usize {
 }
 
 fn move_rope(rope: VecDeque<Point>) -> VecDeque<Point> {
-    let head = rope.front().unwrap();
-    rope.iter()
-        .skip(1)
-        .fold(VecDeque::from([*head]), |mut rope, knot| {
-            let previous_knot = rope.back().unwrap();
-            let (x_diff, y_diff) = previous_knot.difference(&knot);
-            if x_diff.abs() == 2 || y_diff.abs() == 2 {
-                let new_knot = Point(knot.0 + x_diff.signum(), knot.1 + y_diff.signum());
-                rope.push_back(new_knot);
-                rope
-            } else {
-                rope.push_back(*knot);
-                rope
-            }
-        })
+    let head = rope[0];
+    let mut new_rope = VecDeque::from([head]);
+    let mut previous_knot = head;
+    for knot in rope.into_iter().skip(1) {
+        let (x_diff, y_diff) = previous_knot.difference(&knot);
+        if x_diff.abs() == 2 || y_diff.abs() == 2 {
+            let moved_knot = Point(knot.0 + x_diff.signum(), knot.1 + y_diff.signum());
+            previous_knot = moved_knot;
+            new_rope.push_back(moved_knot);
+        } else {
+            previous_knot = knot;
+            new_rope.push_back(knot);
+        }
+    }
+    new_rope
 }
 
 #[derive(Clone)]
