@@ -4,7 +4,6 @@ use std::{
     fs,
     iter::repeat,
 };
-extern crate test;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 struct Point(i16, i16);
@@ -88,8 +87,9 @@ fn parse_moves(line: &str) -> Option<Vec<Direction>> {
 
 #[cfg(test)]
 mod tests {
+    // extern crate test;
+    // use test::Bencher;
     use super::*;
-    use test::Bencher;
 
     #[test]
     fn test_part_one() -> Result<()> {
@@ -105,10 +105,10 @@ mod tests {
         Ok(())
     }
 
-    #[bench]
-    fn bench_count_tail_positions(b: &mut Bencher) -> Result<()> {
-        let input = fs::read_to_string(INPUT)?;
-        b.iter(|| count_unique_tail_positions(&input, 10));
-        Ok(())
-    }
+    // #[bench]
+    // fn bench_count_tail_positions(b: &mut Bencher) -> Result<()> {
+    //     let input = fs::read_to_string(INPUT)?;
+    //     b.iter(|| count_unique_tail_positions(&input, 10));
+    //     Ok(())
+    // }
 }
