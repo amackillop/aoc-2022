@@ -13,5 +13,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     day7::solution()?;
     day8::solution()?;
     day9::solution()?;
-    day10::solution()
+    day10::solution()?;
+    day11::solution()
 }

@@ -4,7 +4,7 @@ use std::fs;
 const INPUT: &str = "./input/day10.txt";
 
 pub fn solution<'a>() -> Result<()> {
-    println!("~~~~~~~~~~~~~ Day 9 ~~~~~~~~~~~~~");
+    println!("~~~~~~~~~~~~~ Day 10 ~~~~~~~~~~~~~");
     let input = fs::read_to_string(INPUT)?;
     println!("Part 1: {}", part1(&input));
     println!("Part 2:");
