@@ -1,5 +1,7 @@
 use crate::days::common::Result;
-use std::{collections::HashSet, fs, vec};
+use std::{collections::HashSet, fs};
+
+use super::common;
 // extern crate test;
 
 pub fn solution<'a>() -> Result<()> {
@@ -12,7 +14,7 @@ pub fn solution<'a>() -> Result<()> {
 
 fn part1(input: &str) -> Option<usize> {
     let rows = build_grid1(input);
-    let cols = transpose(&rows);
+    let cols = common::transpose(&rows);
     let num_edge_trees = 2 * (rows.len() + cols.len()) - 4;
     let lr_set = visible(&rows);
     let tb_set = visible(&cols);
@@ -21,9 +23,9 @@ fn part1(input: &str) -> Option<usize> {
 
 fn part2(input: &str) -> Option<usize> {
     let rows = build_grid2(input);
-    let cols = transpose(&rows);
+    let cols = common::transpose(&rows);
     let row_score_vecs = compute_row_scores(rows);
-    let col_score_vecs: Vec<Vec<usize>> = transpose(&compute_row_scores(cols));
+    let col_score_vecs: Vec<Vec<usize>> = common::transpose(&compute_row_scores(cols));
 
     row_score_vecs
         .iter()
@@ -118,39 +120,10 @@ fn build_grid2(input: &str) -> Vec<Vec<char>> {
     input.lines().map(|line| line.chars().collect()).collect()
 }
 
-fn transpose<T: Copy>(grid: &Vec<Vec<T>>) -> Vec<Vec<T>> {
-    if let Some(first_row) = grid.first() {
-        let ncols = first_row.len();
-        let mut row_iters: Vec<_> = grid.into_iter().map(|n| n.into_iter()).collect();
-        (0..ncols)
-            .map(|_| {
-                row_iters
-                    .iter_mut()
-                    .map(|n| *n.next().unwrap())
-                    .collect::<Vec<_>>()
-            })
-            .collect()
-    } else {
-        vec![vec![]]
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     // use test::Bencher;
-
-    #[test]
-    fn test_transpose() -> Result<()> {
-        let grid = build_grid1("123\n456");
-        let transposed = vec![
-            vec![(0, 0, '1'), (1, 0, '4')],
-            vec![(0, 1, '2'), (1, 1, '5')],
-            vec![(0, 2, '3'), (1, 2, '6')],
-        ];
-        assert_eq!(transpose(&grid), transposed);
-        Ok(())
-    }
 
     #[test]
     fn test_view_Score() -> Result<()> {
