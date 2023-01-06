@@ -51,6 +51,7 @@ fn render_scan(input: &str, padding: i32) -> Array2<char> {
             (max_x + padding + 1) as usize,
         ),
         |(i, j)| {
+            // The floor
             if i == (max_y + 2) as usize {
                 '#'
             } else if point_set.contains(&(j as i32, i as i32)) {
@@ -66,12 +67,11 @@ fn simulate_sand(mut scan: Array2<char>) -> i32 {
     let mut count = 0;
     for i in 0.. {
         scan = if let Some(scan) = add_sand(500, scan) {
-            match move_sand(0, 500, scan) {
-                Some(scan) => scan,
-                None => {
-                    count = i;
-                    break;
-                }
+            if let Some(scan) = move_sand(0, 500, scan) {
+                scan
+            } else {
+                count = i;
+                break;
             }
         } else {
             count = i;
